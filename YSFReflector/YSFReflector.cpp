@@ -17,6 +17,7 @@
 */
 
 #include "YSFReflector.h"
+#include "OpenBridge.h"
 #include "BlockList.h"
 #include "StopWatch.h"
 #include "Network.h"
@@ -170,10 +171,29 @@ void CYSFReflector::run()
 	}
 #endif
 
+	COpenBridgeConfig obConf;
+	obConf.enable     = m_conf.getOpenBridgeEnable();
+	obConf.address    = m_conf.getOpenBridgeAddress();
+	obConf.port       = m_conf.getOpenBridgePort();
+	obConf.localPort  = m_conf.getOpenBridgeLocalPort();
+	obConf.networkId  = m_conf.getOpenBridgeNetworkId();
+	obConf.passphrase = m_conf.getOpenBridgePassphrase();
+	obConf.talkgroup  = m_conf.getOpenBridgeTalkgroup();
+	obConf.idFile     = m_conf.getOpenBridgeIdFile();
+	obConf.fallbackId = m_conf.getOpenBridgeFallbackId();
+	obConf.debug      = m_conf.getOpenBridgeDebug();
+	obConf.gateway    = m_conf.getOpenBridgeCallsign().empty() ? m_conf.getName() : m_conf.getOpenBridgeCallsign();
+	obConf.colorCode  = m_conf.getOpenBridgeColorCode();
+
+	COpenBridge openBridge(obConf);
+	if (obConf.enable && !openBridge.open())
+		LogError("OpenBridge is enabled but failed to start; continuing without it");
+
 	CNetwork network(m_conf.getNetworkPort(), m_conf.getId(), m_conf.getName(), m_conf.getDescription(), m_conf.getNetworkDebug());
 
 	ret = network.open();
 	if (!ret) {
+		openBridge.close();
 		::LogFinalise();
 		return;
 	}
@@ -283,6 +303,8 @@ void CYSFReflector::run()
 				if (!blocked) {
 					watchdogTimer.start();
 
+					openBridge.writeYSF(buffer, len);
+
 					for (std::vector<CYSFRepeater*>::const_iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it) {
 						if (!CUDPSocket::match((*it)->m_addr, addr))
 							network.writeData(buffer, (*it)->m_addr, (*it)->m_addrLen);
@@ -329,6 +351,13 @@ void CYSFReflector::run()
 			watchdogTimer.stop();
 		}
 
+		openBridge.clock(ms);
+		unsigned char obFrame[155U];
+		while (openBridge.readYSF(obFrame)) {
+			for (std::vector<CYSFRepeater*>::const_iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+				network.writeData(obFrame, (*it)->m_addr, (*it)->m_addrLen);
+		}
+
 		dumpTimer.clock(ms);
 		if (dumpTimer.hasExpired()) {
 			dumpRepeaters();
@@ -341,6 +370,7 @@ void CYSFReflector::run()
 			CThread::sleep(5U);
 	}
 
+	openBridge.close();
 	network.close();
 
 	::LogFinalise();
