@@ -32,7 +32,8 @@ enum SECTION {
   SECTION_INFO,
   SECTION_LOG,
   SECTION_NETWORK,
-  SECTION_BLOCKLIST
+  SECTION_BLOCKLIST,
+  SECTION_OPENBRIDGE
 };
 
 CConf::CConf(const std::string& file) :
@@ -49,7 +50,19 @@ m_logFileRotate(true),
 m_networkPort(0U),
 m_networkDebug(false),
 m_blockListFile(),
-m_blockListTime(5U)
+m_blockListTime(5U),
+m_obEnable(false),
+m_obAddress(),
+m_obPort(0U),
+m_obLocalPort(0U),
+m_obNetworkId(0U),
+m_obPassphrase(),
+m_obTalkgroup(0U),
+m_obIdFile(),
+m_obFallbackId(0U),
+m_obDebug(false),
+m_obCallsign(),
+m_obColorCode(1U)
 {
 }
 
@@ -83,6 +96,8 @@ bool CConf::read()
 			  section = SECTION_NETWORK;
 		  else if (::strncmp(buffer, "[Block List]", 12U) == 0)
 			  section = SECTION_BLOCKLIST;
+		  else if (::strncmp(buffer, "[OpenBridge]", 12U) == 0)
+			  section = SECTION_OPENBRIDGE;
 		  else
 			  section = SECTION_NONE;
 
@@ -145,6 +160,31 @@ bool CConf::read()
 			  m_blockListFile = value;
 		  else if (::strcmp(key, "Time") == 0)
 			  m_blockListTime = (unsigned int)::atoi(value);
+	  } else if (section == SECTION_OPENBRIDGE) {
+		  if (::strcmp(key, "Enable") == 0)
+			  m_obEnable = ::atoi(value) == 1;
+		  else if (::strcmp(key, "Address") == 0)
+			  m_obAddress = value;
+		  else if (::strcmp(key, "Port") == 0)
+			  m_obPort = (unsigned short)::atoi(value);
+		  else if (::strcmp(key, "LocalPort") == 0)
+			  m_obLocalPort = (unsigned short)::atoi(value);
+		  else if (::strcmp(key, "NetworkId") == 0)
+			  m_obNetworkId = (unsigned int)::strtoul(value, NULL, 10);
+		  else if (::strcmp(key, "Passphrase") == 0)
+			  m_obPassphrase = value;
+		  else if (::strcmp(key, "Talkgroup") == 0)
+			  m_obTalkgroup = (unsigned int)::strtoul(value, NULL, 10);
+		  else if (::strcmp(key, "IdFile") == 0)
+			  m_obIdFile = value;
+		  else if (::strcmp(key, "FallbackId") == 0)
+			  m_obFallbackId = (unsigned int)::strtoul(value, NULL, 10);
+		  else if (::strcmp(key, "Debug") == 0)
+			  m_obDebug = ::atoi(value) == 1;
+		  else if (::strcmp(key, "Callsign") == 0)
+			  m_obCallsign = value;
+		  else if (::strcmp(key, "ColorCode") == 0)
+			  m_obColorCode = (unsigned char)::atoi(value);
 	  }
   }
 
@@ -216,4 +256,64 @@ std::string CConf::getBlockListFile() const
 unsigned int CConf::getBlockListTime() const
 {
 	return m_blockListTime;
+}
+
+bool CConf::getOpenBridgeEnable() const
+{
+	return m_obEnable;
+}
+
+std::string CConf::getOpenBridgeAddress() const
+{
+	return m_obAddress;
+}
+
+unsigned short CConf::getOpenBridgePort() const
+{
+	return m_obPort;
+}
+
+unsigned short CConf::getOpenBridgeLocalPort() const
+{
+	return m_obLocalPort;
+}
+
+unsigned int CConf::getOpenBridgeNetworkId() const
+{
+	return m_obNetworkId;
+}
+
+std::string CConf::getOpenBridgePassphrase() const
+{
+	return m_obPassphrase;
+}
+
+unsigned int CConf::getOpenBridgeTalkgroup() const
+{
+	return m_obTalkgroup;
+}
+
+std::string CConf::getOpenBridgeIdFile() const
+{
+	return m_obIdFile;
+}
+
+unsigned int CConf::getOpenBridgeFallbackId() const
+{
+	return m_obFallbackId;
+}
+
+bool CConf::getOpenBridgeDebug() const
+{
+	return m_obDebug;
+}
+
+std::string CConf::getOpenBridgeCallsign() const
+{
+	return m_obCallsign;
+}
+
+unsigned char CConf::getOpenBridgeColorCode() const
+{
+	return m_obColorCode;
 }

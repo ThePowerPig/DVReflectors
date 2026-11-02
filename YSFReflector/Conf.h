@@ -53,6 +53,20 @@ public:
   std::string  getBlockListFile() const;
   unsigned int getBlockListTime() const;
 
+  // The OpenBridge section. Disabled unless Enable=1.
+  bool         getOpenBridgeEnable() const;
+  std::string  getOpenBridgeAddress() const;
+  unsigned short getOpenBridgePort() const;
+  unsigned short getOpenBridgeLocalPort() const;
+  unsigned int getOpenBridgeNetworkId() const;
+  std::string  getOpenBridgePassphrase() const;
+  unsigned int getOpenBridgeTalkgroup() const;
+  std::string  getOpenBridgeIdFile() const;
+  unsigned int getOpenBridgeFallbackId() const;
+  bool         getOpenBridgeDebug() const;
+  std::string  getOpenBridgeCallsign() const;
+  unsigned char getOpenBridgeColorCode() const;
+
 private:
   std::string  m_file;
   bool         m_daemon;
@@ -72,6 +86,19 @@ private:
 
   std::string  m_blockListFile;
   unsigned int m_blockListTime;
+
+  bool           m_obEnable;
+  std::string    m_obAddress;
+  unsigned short m_obPort;
+  unsigned short m_obLocalPort;
+  unsigned int   m_obNetworkId;
+  std::string    m_obPassphrase;
+  unsigned int   m_obTalkgroup;
+  std::string    m_obIdFile;
+  unsigned int   m_obFallbackId;
+  bool           m_obDebug;
+  std::string    m_obCallsign;
+  unsigned char  m_obColorCode;
 };
 
 #endif
