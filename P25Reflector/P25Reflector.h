@@ -21,6 +21,7 @@
 
 #include "Timer.h"
 #include "Conf.h"
+#include "ObpNetwork.h"
 
 #include <cstdio>
 #include <string>
@@ -65,6 +66,7 @@ public:
 private:
 	CConf                      m_conf;
 	std::vector<CP25Repeater*> m_repeaters;
+	CObpNetwork*               m_obp;
 
 	CP25Repeater* findRepeater(const sockaddr_storage& addr) const;
 	void dumpRepeaters() const;

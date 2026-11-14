@@ -48,6 +48,22 @@ public:
   unsigned short getNetworkPort() const;
   bool         getNetworkDebug() const;
 
+  // The OpenBridge section
+  bool         getObpEnabled() const;
+  std::string  getObpAddress() const;
+  unsigned short getObpPeerPort() const;
+  unsigned short getObpPort() const;
+  std::string  getObpPassphrase() const;
+  unsigned int getObpId() const;
+  std::string  getObpCallsign() const;
+  bool         getObpDebug() const;
+
+  // The Vocoder section
+  bool         getVocoderEnabled() const;
+  std::string  getVocoderAddress() const;
+  unsigned short getVocoderAmbePort() const;
+  unsigned short getVocoderImbePort() const;
+
 private:
   std::string  m_file;
   bool         m_daemon;
@@ -63,6 +79,20 @@ private:
 
   unsigned short m_networkPort;
   bool         m_networkDebug;
+
+  bool         m_obpEnabled;
+  std::string  m_obpAddress;
+  unsigned short m_obpPeerPort;
+  unsigned short m_obpPort;
+  std::string  m_obpPassphrase;
+  unsigned int m_obpId;
+  std::string  m_obpCallsign;
+  bool         m_obpDebug;
+
+  bool         m_vocoderEnabled;
+  std::string  m_vocoderAddress;
+  unsigned short m_vocoderAmbePort;
+  unsigned short m_vocoderImbePort;
 };
 
 #endif

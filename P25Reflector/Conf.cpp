@@ -31,7 +31,9 @@ enum SECTION {
   SECTION_GENERAL,
   SECTION_ID_LOOKUP,
   SECTION_LOG,
-  SECTION_NETWORK
+  SECTION_NETWORK,
+  SECTION_OPENBRIDGE,
+  SECTION_VOCODER
 };
 
 CConf::CConf(const std::string& file) :
@@ -45,7 +47,19 @@ m_logFilePath(),
 m_logFileRoot(),
 m_logFileRotate(true),
 m_networkPort(0U),
-m_networkDebug(false)
+m_networkDebug(false),
+m_obpEnabled(false),
+m_obpAddress(),
+m_obpPeerPort(0U),
+m_obpPort(0U),
+m_obpPassphrase(),
+m_obpId(0U),
+m_obpCallsign(),
+m_obpDebug(false),
+m_vocoderEnabled(false),
+m_vocoderAddress(),
+m_vocoderAmbePort(0U),
+m_vocoderImbePort(0U)
 {
 }
 
@@ -76,7 +90,11 @@ bool CConf::read()
 		  else if (::strncmp(buffer, "[Log]", 5U) == 0)
 			  section = SECTION_LOG;
 		  else if (::strncmp(buffer, "[Network]", 9U) == 0)
-			  section = SECTION_NETWORK;
+		  section = SECTION_NETWORK;
+		  else if (::strncmp(buffer, "[OpenBridge]", 12U) == 0)
+		  section = SECTION_OPENBRIDGE;
+		  else if (::strncmp(buffer, "[Vocoder]", 9U) == 0)
+		  section = SECTION_VOCODER;
 		  else
 			  section = SECTION_NONE;
 
@@ -132,6 +150,32 @@ bool CConf::read()
 			  m_networkPort = (unsigned short)::atoi(value);
 		  else if (::strcmp(key, "Debug") == 0)
 			  m_networkDebug = ::atoi(value) == 1;
+	  } else if (section == SECTION_OPENBRIDGE) {
+		  if (::strcmp(key, "Enabled") == 0)
+			  m_obpEnabled = ::atoi(value) == 1;
+		  else if (::strcmp(key, "Address") == 0)
+			  m_obpAddress = value;
+		  else if (::strcmp(key, "PeerPort") == 0)
+			  m_obpPeerPort = (unsigned short)::atoi(value);
+		  else if (::strcmp(key, "Port") == 0)
+			  m_obpPort = (unsigned short)::atoi(value);
+		  else if (::strcmp(key, "Passphrase") == 0)
+			  m_obpPassphrase = value;
+		  else if (::strcmp(key, "ID") == 0)
+			  m_obpId = (unsigned int)::atoi(value);
+		  else if (::strcmp(key, "Callsign") == 0)
+			  m_obpCallsign = value;
+		  else if (::strcmp(key, "Debug") == 0)
+			  m_obpDebug = ::atoi(value) == 1;
+	  } else if (section == SECTION_VOCODER) {
+		  if (::strcmp(key, "Enabled") == 0)
+			  m_vocoderEnabled = ::atoi(value) == 1;
+		  else if (::strcmp(key, "Address") == 0)
+			  m_vocoderAddress = value;
+		  else if (::strcmp(key, "AmbePort") == 0)
+			  m_vocoderAmbePort = (unsigned short)::atoi(value);
+		  else if (::strcmp(key, "ImbePort") == 0)
+			  m_vocoderImbePort = (unsigned short)::atoi(value);
 	  }
   }
 
@@ -188,4 +232,64 @@ unsigned short CConf::getNetworkPort() const
 bool CConf::getNetworkDebug() const
 {
 	return m_networkDebug;
+}
+
+bool CConf::getObpEnabled() const
+{
+	return m_obpEnabled;
+}
+
+std::string CConf::getObpAddress() const
+{
+	return m_obpAddress;
+}
+
+unsigned short CConf::getObpPeerPort() const
+{
+	return m_obpPeerPort;
+}
+
+unsigned short CConf::getObpPort() const
+{
+	return m_obpPort;
+}
+
+std::string CConf::getObpPassphrase() const
+{
+	return m_obpPassphrase;
+}
+
+unsigned int CConf::getObpId() const
+{
+	return m_obpId;
+}
+
+std::string CConf::getObpCallsign() const
+{
+	return m_obpCallsign;
+}
+
+bool CConf::getObpDebug() const
+{
+	return m_obpDebug;
+}
+
+bool CConf::getVocoderEnabled() const
+{
+	return m_vocoderEnabled;
+}
+
+std::string CConf::getVocoderAddress() const
+{
+	return m_vocoderAddress;
+}
+
+unsigned short CConf::getVocoderAmbePort() const
+{
+	return m_vocoderAmbePort;
+}
+
+unsigned short CConf::getVocoderImbePort() const
+{
+	return m_vocoderImbePort;
 }

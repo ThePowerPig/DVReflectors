@@ -80,7 +80,8 @@ int main(int argc, char** argv)
 
 CP25Reflector::CP25Reflector(const std::string& file) :
 m_conf(file),
-m_repeaters()
+m_repeaters(),
+m_obp(NULL)
 {
 	CUDPSocket::startup();
 }
@@ -182,6 +183,18 @@ void CP25Reflector::run()
 	CDMRLookup* lookup = new CDMRLookup(m_conf.getLookupName(), m_conf.getLookupTime());
 	lookup->read();
 
+	if (m_conf.getObpEnabled()) {
+		m_obp = new CObpNetwork(m_conf.getObpAddress(), m_conf.getObpPeerPort(), m_conf.getObpPort(),
+			m_conf.getObpPassphrase(), m_conf.getObpId(), m_conf.getObpCallsign(),
+			m_conf.getVocoderEnabled(), m_conf.getVocoderAddress(),
+			m_conf.getVocoderAmbePort(), m_conf.getVocoderImbePort(), m_conf.getObpDebug());
+		if (!m_obp->open()) {
+			::LogError("Unable to open the OpenBridge link, continuing without it");
+			delete m_obp;
+			m_obp = NULL;
+		}
+	}
+
 	CStopWatch stopWatch;
 	stopWatch.start();
 
@@ -279,6 +292,10 @@ void CP25Reflector::run()
 							network.writeData(buffer, len, (*it)->m_addr, (*it)->m_addrLen);
 					}
 
+					// OBP (OpenBridge) TX: mirror the local transmission to the peer.
+					if (m_obp != NULL)
+						m_obp->feedP25Frame(buffer, len);
+
 					if (buffer[0U] == 0x80U) {
 						LogMessage("Received end of transmission");
 						watchdogTimer.stop();
@@ -288,6 +305,16 @@ void CP25Reflector::run()
 			} else {
 				LogMessage("Data received from an unknown source");
 				CUtils::dump(2U, "Data", buffer, len);
+			}
+		}
+
+		// OBP (OpenBridge) RX: convert any pending DMRD voice into P25 frames
+		// and forward them to every linked repeater, exactly like a local one.
+		if (m_obp != NULL) {
+			unsigned int obpLen = m_obp->readP25Frame(buffer);
+			if (obpLen > 0U) {
+				for (std::vector<CP25Repeater*>::const_iterator it = m_repeaters.begin(); it != m_repeaters.end(); ++it)
+					network.writeData(buffer, obpLen, (*it)->m_addr, (*it)->m_addrLen);
 			}
 		}
 
@@ -323,8 +350,17 @@ void CP25Reflector::run()
 			dumpTimer.start();
 		}
 
+		if (m_obp != NULL)
+			m_obp->clock(ms);
+
 		if (ms < 5U)
 			CThread::sleep(5U);
+	}
+
+	if (m_obp != NULL) {
+		m_obp->close();
+		delete m_obp;
+		m_obp = NULL;
 	}
 
 	network.close();
