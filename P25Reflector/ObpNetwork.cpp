@@ -19,6 +19,7 @@
 #include "ObpNetwork.h"
 #include "Log.h"
 #include "Utils.h"
+#include "BuiltinVocoder.h"
 
 #include "obp.h"
 #include "dmr_voice.h"
@@ -134,7 +135,7 @@ static unsigned int imbeOffset(unsigned char type)
 
 CObpNetwork::CObpNetwork(const std::string& address, unsigned short peerPort, unsigned short port,
 	const std::string& passphrase, unsigned int netid, const std::string& callsign,
-	bool vocoderEnabled, const std::string& vocoderAddress,
+	bool vocoderEnabled, bool vocoderBuiltin, const std::string& vocoderAddress,
 	unsigned short vocoderAmbePort, unsigned short vocoderImbePort,
 	bool debug) :
 m_address(),
@@ -148,6 +149,7 @@ m_callsign(callsign),
 m_seq(0U),
 m_debug(debug),
 m_vocoderEnabled(vocoderEnabled),
+m_vocoderBuiltin(vocoderBuiltin),
 m_vocoderAddress(vocoderAddress),
 m_vocoderAmbePort(vocoderAmbePort),
 m_vocoderImbePort(vocoderImbePort),
@@ -214,11 +216,20 @@ bool CObpNetwork::open()
 	LogMessage("Opened the OpenBridge link to %s:%u (local port %hu)", m_address.c_str(), m_peerPort, m_port);
 
 	if (m_vocoderEnabled) {
-		m_vocoder = new CVocoder(m_vocoderAddress, m_vocoderAmbePort, m_vocoderImbePort, m_debug);
-		if (!m_vocoder->open()) {
-			LogError("OBP: cannot open the vocoder connection, voice conversion disabled");
-			delete m_vocoder;
-			m_vocoder = NULL;
+		if (m_vocoderBuiltin) {
+			m_vocoder = new CBuiltinVocoder(m_debug);
+			if (!m_vocoder->open()) {
+				LogError("OBP: cannot initialise the builtin vocoder, voice conversion disabled");
+				delete m_vocoder;
+				m_vocoder = NULL;
+			}
+		} else {
+			m_vocoder = new CVocoder(m_vocoderAddress, m_vocoderAmbePort, m_vocoderImbePort, m_debug);
+			if (!m_vocoder->open()) {
+				LogError("OBP: cannot open the vocoder connection, voice conversion disabled");
+				delete m_vocoder;
+				m_vocoder = NULL;
+			}
 		}
 	} else {
 		LogMessage("OBP: vocoder disabled, streams are tracked but voice is not bridged");
@@ -297,6 +308,9 @@ unsigned int CObpNetwork::readP25Frame(unsigned char* data)
 			m_rxHdr64 = m_rxHdr65 = m_rxHdr66 = false;
 			m_rxActive = true;
 			m_rxTimer.start();
+
+			if (m_vocoder != NULL)
+				m_vocoder->resetRx();
 
 			emitRXHeader();
 
@@ -658,6 +672,9 @@ void CObpNetwork::startTXStream()
 		m_txSrc = m_netid & 0x00FFFFFFU;         // fall back to our network ID
 
 	randomStream(m_txStream);
+
+	if (m_vocoder != NULL)
+		m_vocoder->resetTx();
 
 	unsigned char lc[9U];
 	buildTxLc(lc);

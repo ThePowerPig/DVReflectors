@@ -62,7 +62,7 @@ class CObpNetwork {
 public:
 	CObpNetwork(const std::string& address, unsigned short peerPort, unsigned short port,
 		const std::string& passphrase, unsigned int netid, const std::string& callsign,
-		bool vocoderEnabled, const std::string& vocoderAddress,
+		bool vocoderEnabled, bool vocoderBuiltin, const std::string& vocoderAddress,
 		unsigned short vocoderAmbePort, unsigned short vocoderImbePort,
 		bool debug);
 	~CObpNetwork();
@@ -99,6 +99,7 @@ private:
 
 	// --- Vocoder (owns the conversion engine) -----------------------------
 	bool                m_vocoderEnabled;
+	bool                m_vocoderBuiltin;   // true = compiled-in mbelib-neo engine
 	std::string         m_vocoderAddress;
 	unsigned short      m_vocoderAmbePort;
 	unsigned short      m_vocoderImbePort;
@@ -135,7 +136,7 @@ private:
 	CTimer              m_txFailTimer;  // TX idle watchdog (restarted by each fed frame)
 	bool                m_vocoderFailLogged;
 
-	CVocoder*           m_vocoder;
+	IVocoder*           m_vocoder;
 
 	// --- helpers -----------------------------------------------------------
 	void queueP25Frame(const P25Frame& frame);

@@ -60,6 +60,7 @@ public:
 
   // The Vocoder section
   bool         getVocoderEnabled() const;
+  bool         getVocoderBuiltin() const;
   std::string  getVocoderAddress() const;
   unsigned short getVocoderAmbePort() const;
   unsigned short getVocoderImbePort() const;
@@ -90,6 +91,7 @@ private:
   bool         m_obpDebug;
 
   bool         m_vocoderEnabled;
+  bool         m_vocoderBuiltin;
   std::string  m_vocoderAddress;
   unsigned short m_vocoderAmbePort;
   unsigned short m_vocoderImbePort;

@@ -186,7 +186,7 @@ void CP25Reflector::run()
 	if (m_conf.getObpEnabled()) {
 		m_obp = new CObpNetwork(m_conf.getObpAddress(), m_conf.getObpPeerPort(), m_conf.getObpPort(),
 			m_conf.getObpPassphrase(), m_conf.getObpId(), m_conf.getObpCallsign(),
-			m_conf.getVocoderEnabled(), m_conf.getVocoderAddress(),
+			m_conf.getVocoderEnabled(), m_conf.getVocoderBuiltin(), m_conf.getVocoderAddress(),
 			m_conf.getVocoderAmbePort(), m_conf.getVocoderImbePort(), m_conf.getObpDebug());
 		if (!m_obp->open()) {
 			::LogError("Unable to open the OpenBridge link, continuing without it");

@@ -39,7 +39,35 @@
 
 #include <string>
 
-class CVocoder {
+// Backend interface used by CObpNetwork.  Two implementations:
+//   CVocoder        - external vocoder over UDP (md380tools protocol)
+//   CBuiltinVocoder - compiled-in mbelib-neo engine (see BuiltinVocoder.h)
+class IVocoder {
+public:
+	virtual ~IVocoder() {}
+
+	virtual bool open() = 0;
+	virtual void close() = 0;
+
+	// AMBE (7 bytes) -> PCM (320 bytes = 160 x int16 LE samples).
+	virtual bool ambeToPcm(const unsigned char ambe7[7], short pcm160[160]) = 0;
+
+	// PCM (320 bytes) -> AMBE (7 bytes).
+	virtual bool pcmToAmbe(const short pcm160[160], unsigned char ambe7[7]) = 0;
+
+	// IMBE (11 bytes) -> PCM (320 bytes).
+	virtual bool imbeToPcm(const unsigned char imbe11[11], short pcm160[160]) = 0;
+
+	// PCM (320 bytes) -> IMBE (11 bytes).
+	virtual bool pcmToImbe(const short pcm160[160], unsigned char imbe11[11]) = 0;
+
+	// Per-stream codec-state resets (RX side = AMBE decoder + IMBE encoder,
+	// TX side = IMBE decoder + AMBE encoder).  Stateful backends override.
+	virtual void resetRx() {}
+	virtual void resetTx() {}
+};
+
+class CVocoder : public IVocoder {
 public:
 	CVocoder(const std::string& address, unsigned short ambePort, unsigned short imbePort, bool debug);
 	~CVocoder();

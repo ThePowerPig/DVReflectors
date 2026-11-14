@@ -57,6 +57,7 @@ m_obpId(0U),
 m_obpCallsign(),
 m_obpDebug(false),
 m_vocoderEnabled(false),
+m_vocoderBuiltin(true),
 m_vocoderAddress(),
 m_vocoderAmbePort(0U),
 m_vocoderImbePort(0U)
@@ -170,6 +171,8 @@ bool CConf::read()
 	  } else if (section == SECTION_VOCODER) {
 		  if (::strcmp(key, "Enabled") == 0)
 			  m_vocoderEnabled = ::atoi(value) == 1;
+		  else if (::strcmp(key, "Builtin") == 0)
+			  m_vocoderBuiltin = ::atoi(value) == 1;
 		  else if (::strcmp(key, "Address") == 0)
 			  m_vocoderAddress = value;
 		  else if (::strcmp(key, "AmbePort") == 0)
@@ -277,6 +280,11 @@ bool CConf::getObpDebug() const
 bool CConf::getVocoderEnabled() const
 {
 	return m_vocoderEnabled;
+}
+
+bool CConf::getVocoderBuiltin() const
+{
+	return m_vocoderBuiltin;
 }
 
 std::string CConf::getVocoderAddress() const
